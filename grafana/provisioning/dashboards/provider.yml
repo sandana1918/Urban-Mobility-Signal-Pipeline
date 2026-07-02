@@ -1,0 +1,15 @@
+# Loads every dashboard JSON under /var/lib/grafana/dashboards
+# (mounted from ./grafana/dashboards) on startup.
+apiVersion: 1
+
+providers:
+  - name: Urban Mobility Signal Pipeline
+    orgId: 1
+    folder: Urban Mobility Signal Pipeline
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

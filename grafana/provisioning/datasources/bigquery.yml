@@ -1,0 +1,23 @@
+# Provisions the BigQuery datasource for Grafana.
+#
+# Auth: the grafana service in docker-compose.yml mounts the service-account
+# key at /etc/grafana/secrets/gcp-key.json and sets
+# GOOGLE_APPLICATION_CREDENTIALS to it, so the plugin authenticates via
+# Application Default Credentials ("gce"/ADC) with no secret in this file.
+#
+# $GCP_PROJECT_ID and $BQ_LOCATION are interpolated by Grafana from the
+# container environment (also set in docker-compose.yml).
+apiVersion: 1
+
+datasources:
+  - name: BigQuery
+    uid: mobility_bigquery
+    type: grafana-bigquery-datasource
+    access: proxy
+    isDefault: true
+    jsonData:
+      authenticationType: gce
+      defaultProject: $GCP_PROJECT_ID
+      processingLocation: $BQ_LOCATION
+    version: 1
+    editable: true

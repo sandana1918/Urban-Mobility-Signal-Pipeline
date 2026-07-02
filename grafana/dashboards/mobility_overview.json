@@ -1,0 +1,228 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 39,
+  "tags": ["mobility", "taxi", "bigquery"],
+  "title": "Urban Mobility Signal Pipeline - NYC Taxi Overview",
+  "uid": "urban-mobility-overview",
+  "time": { "from": "2023-01-01T00:00:00.000Z", "to": "2023-12-31T23:59:59.000Z" },
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "name": "bq_dataset",
+        "type": "constant",
+        "label": "BigQuery dataset",
+        "query": "urban_mobility_signal_pipeline",
+        "current": { "text": "urban_mobility_signal_pipeline", "value": "urban_mobility_signal_pipeline" },
+        "hide": 2
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Total Trips",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none" },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT SUM(trips) AS trips FROM `${bq_dataset}.vw_daily_kpis`"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Total Revenue",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none" },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT SUM(revenue) AS revenue FROM `${bq_dataset}.vw_daily_kpis`"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Avg Revenue / Trip",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD", "decimals": 2 }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none" },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT SAFE_DIVIDE(SUM(revenue), SUM(trips)) AS rpt FROM `${bq_dataset}.vw_daily_kpis`"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Failing Data-Quality Checks",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none" },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT COUNTIF(NOT passed AND severity = 'error') AS failing FROM `${bq_dataset}.vw_data_quality`"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Daily Revenue & Trips",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 4 },
+      "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+      "fieldConfig": {
+        "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2 } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "trips" }, "properties": [ { "id": "custom.axisPlacement", "value": "right" } ] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawSql": "SELECT TIMESTAMP(day) AS time, revenue, trips FROM `${bq_dataset}.vw_daily_kpis` ORDER BY day"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "barchart",
+      "title": "Monthly Revenue (with MoM % in tooltip)",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 13 },
+      "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" }, "overrides": [] },
+      "options": { "xField": "month", "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT FORMAT_DATE('%Y-%m', month) AS month, revenue, revenue_mom_pct FROM `${bq_dataset}.vw_monthly_trend` ORDER BY month"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Top Pickup Zones by Revenue",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 13 },
+      "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "revenue" }, "properties": [ { "id": "unit", "value": "currencyUSD" } ] },
+          { "matcher": { "id": "byName", "options": "avg_revenue_per_mile" }, "properties": [ { "id": "unit", "value": "currencyUSD" } ] }
+        ]
+      },
+      "options": { "showHeader": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT revenue_rank, pickup_zone, pickup_borough, trips, revenue, avg_revenue_per_mile FROM `${bq_dataset}.vw_zone_leaderboard` ORDER BY revenue_rank LIMIT 15"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "heatmap",
+      "title": "Demand by Hour Ã— Day-of-Week",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 22 },
+      "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+      "options": { "calculate": false, "cellGap": 1, "color": { "scheme": "Oranges", "mode": "scheme" }, "yAxis": { "axisLabel": "hour" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT pickup_dow, pickup_hour, trips FROM `${bq_dataset}.vw_hourly_demand` ORDER BY pickup_dow, pickup_hour"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Citywide Trips with Anomaly Overlay",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 22 },
+      "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+      "fieldConfig": {
+        "defaults": { "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 5 } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "anomaly" }, "properties": [ { "id": "custom.drawStyle", "value": "points" }, { "id": "custom.pointSize", "value": 8 }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } } ] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawSql": "SELECT TIMESTAMP(day) AS time, value AS trips, IF(is_anomalous, value, NULL) AS anomaly FROM `${bq_dataset}.vw_anomaly_overlay` WHERE grain = 'citywide' AND metric = 'trip_count' ORDER BY day"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Data-Quality Checks",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 31 },
+      "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "passed" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [ { "type": "value", "options": { "true": { "color": "green", "text": "PASS" }, "false": { "color": "red", "text": "FAIL" } } } ] }
+            ]
+          }
+        ]
+      },
+      "options": { "showHeader": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT name, severity, passed, detail FROM `${bq_dataset}.vw_data_quality`"
+        }
+      ]
+    }
+  ]
+}
+

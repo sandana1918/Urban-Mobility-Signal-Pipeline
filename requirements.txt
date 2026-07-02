@@ -1,0 +1,16 @@
+# Host-side dependencies (ingest, validation, analysis, load, genai).
+# Spark itself runs inside the `spark` Docker service (see Dockerfile.spark) -
+# these are NOT used to run PySpark on Windows directly.
+requests>=2.32.3
+tqdm>=4.66.5
+pandas>=2.2.3
+pyarrow>=18.1.0
+numpy>=2.1.3
+scipy>=1.14.1
+python-dotenv>=1.0.1
+
+google-cloud-bigquery>=3.26.0
+google-cloud-bigquery-storage>=2.27.0
+db-dtypes>=1.3.0
+
+google-generativeai>=0.8.3

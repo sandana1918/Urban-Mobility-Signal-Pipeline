@@ -1,0 +1,31 @@
+services:
+  spark:
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
+    image: urban-mobility-signal-pipeline-spark:latest
+    volumes:
+      - ./data:/app/data
+      - ./pipeline:/app/pipeline
+    working_dir: /app
+
+  grafana:
+    image: grafana/grafana-oss:11.3.0
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_INSTALL_PLUGINS=grafana-bigquery-datasource
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - BQ_DATASET=${BQ_DATASET}
+      - BQ_LOCATION=${BQ_LOCATION:-US}
+      # BigQuery datasource authenticates via ADC against this mounted key.
+      - GOOGLE_APPLICATION_CREDENTIALS=/etc/grafana/secrets/gcp-key.json
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./secrets:/etc/grafana/secrets:ro
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  grafana-data:
