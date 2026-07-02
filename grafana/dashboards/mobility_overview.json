@@ -112,7 +112,7 @@
         {
           "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
           "editorMode": "code",
-          "format": "time_series",
+          "format": "table",
           "rawSql": "SELECT TIMESTAMP(day) AS time, revenue, trips FROM `${bq_dataset}.vw_daily_kpis` ORDER BY day"
         }
       ]
@@ -190,7 +190,7 @@
         {
           "datasource": { "type": "grafana-bigquery-datasource", "uid": "mobility_bigquery" },
           "editorMode": "code",
-          "format": "time_series",
+          "format": "table",
           "rawSql": "SELECT TIMESTAMP(day) AS time, value AS trips, IF(is_anomalous, value, NULL) AS anomaly FROM `${bq_dataset}.vw_anomaly_overlay` WHERE grain = 'citywide' AND metric = 'trip_count' ORDER BY day"
         }
       ]
