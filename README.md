@@ -97,7 +97,7 @@ Then fill in the required values in `.env`:
 ```text
 GCP_PROJECT_ID=your-gcp-project-id
 GCP_KEY_PATH=./secrets/gcp-key.json
-BQ_DATASET=urban_mobility_signal_pipeline
+BQ_DATASET=gtm_signal_pipeline
 BQ_LOCATION=US
 GRAFANA_ADMIN_PASSWORD=admin
 ```
@@ -207,7 +207,7 @@ needed.
 The BigQuery dataset defaults to:
 
 ```text
-urban_mobility_signal_pipeline
+gtm_signal_pipeline
 ```
 
 The Grafana dashboard is provisioned from `grafana/dashboards/`, and the

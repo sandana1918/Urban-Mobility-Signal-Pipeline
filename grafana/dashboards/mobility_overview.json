@@ -14,8 +14,8 @@
         "name": "bq_dataset",
         "type": "constant",
         "label": "BigQuery dataset",
-        "query": "urban_mobility_signal_pipeline",
-        "current": { "text": "urban_mobility_signal_pipeline", "value": "urban_mobility_signal_pipeline" },
+        "query": "gtm_signal_pipeline",
+        "current": { "text": "gtm_signal_pipeline", "value": "gtm_signal_pipeline" },
         "hide": 2
       }
     ]
