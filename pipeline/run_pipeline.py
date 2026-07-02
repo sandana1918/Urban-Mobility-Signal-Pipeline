@@ -11,11 +11,14 @@ Runs the stages in dependency order:
     6. benchmark     partitioned vs naive scan comparison         (needs GCP creds)
     7. grafana       bring up the dashboard container             (needs GCP creds)
     8. weekly        Gemini weekly summary                        (needs GCP + Gemini)
+    9. report        formatted multi-sheet Excel report           (host python)
 
 Credential-gated stages (5-8) are skipped with a clear notice if .env / the
 service-account key / the Gemini key aren't present, so the free part of the
-pipeline always runs to completion. Use --from / --only / --skip to control
-which stages run.
+pipeline always runs to completion. The final report stage reads whatever
+local artifacts exist (Parquet aggregates + JSON reports), so it needs no
+credentials and always runs. Use --from / --only / --skip to control which
+stages run.
 
 Usage:
     python pipeline/run_pipeline.py                 # everything runnable
@@ -38,7 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 PY = sys.executable
 
 # Ordered stage list. `needs_creds` marks stages that require GCP (and, for
-# weekly, Gemini) — they're skipped gracefully when credentials are absent.
+# weekly, Gemini) - they're skipped gracefully when credentials are absent.
 STAGES = [
     {"name": "ingest", "needs_creds": False,
      "cmd": [PY, "pipeline/ingest/download_taxi_data.py"]},
@@ -56,6 +59,8 @@ STAGES = [
      "cmd": ["docker", "compose", "up", "-d", "grafana"]},
     {"name": "weekly", "needs_creds": True, "needs_llm": True,
      "cmd": [PY, "pipeline/genai/assistant.py", "weekly-summary"]},
+    {"name": "report", "needs_creds": False,
+     "cmd": [PY, "pipeline/report/excel_report.py"]},
 ]
 STAGE_NAMES = [s["name"] for s in STAGES]
 
@@ -74,7 +79,7 @@ def run_stage(stage: dict) -> None:
     t0 = time.time()
     result = subprocess.run(stage["cmd"], cwd=REPO_ROOT)
     if result.returncode != 0:
-        raise SystemExit(f"[run] stage '{name}' failed (exit {result.returncode}) — stopping.")
+        raise SystemExit(f"[run] stage '{name}' failed (exit {result.returncode}) - stopping.")
     print(f"[run] stage '{name}' ok ({time.time() - t0:.1f}s)")
 
 

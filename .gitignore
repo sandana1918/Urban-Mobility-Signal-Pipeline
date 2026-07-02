@@ -27,6 +27,7 @@ derby.log
 reports/*.json
 reports/*.md
 reports/*.log
+reports/*.xlsx
 !reports/.gitkeep
 
 ## OS

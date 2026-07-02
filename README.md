@@ -3,8 +3,8 @@
 An end-to-end analytics pipeline for NYC TLC Yellow Taxi trip data. The project
 downloads public trip records, cleans and aggregates them with PySpark, validates
 data quality, loads curated tables into BigQuery, creates analysis views, powers
-a Grafana dashboard, and provides a natural-language analytics assistant for
-stakeholder questions.
+a Grafana dashboard, creates a formatted Excel report, and provides a
+natural-language analytics assistant for stakeholder questions.
 
 The default dataset covers 12 months of 2023 yellow-taxi activity, roughly
 35-40 million trips. Credential-dependent stages are designed to skip cleanly
@@ -25,6 +25,7 @@ validation, and anomaly-detection flow can still run independently.
   validation status.
 - Weekday-adjusted anomaly detection for trip volume and revenue signals.
 - Provisioned Grafana dashboard backed by BigQuery.
+- Formatted multi-sheet Excel report for offline stakeholder review.
 - Natural-language analytics assistant using Groq or Gemini to generate safe,
   read-only BigQuery SQL and plain-English summaries.
 
@@ -43,6 +44,7 @@ NYC TLC public data
   -> pipeline/analysis/trend_cohort.sql
   -> grafana/
   -> pipeline/genai/assistant.py
+  -> pipeline/report/excel_report.py
 ```
 
 ## Repository Structure
@@ -55,6 +57,7 @@ pipeline/
   analysis/     SQL views and anomaly detection
   load/         BigQuery load and partitioning benchmark
   genai/        Natural-language analytics assistant
+  report/       Formatted Excel report generation
 grafana/
   dashboards/   Provisioned dashboard JSON
   provisioning/ Grafana datasource and dashboard providers
@@ -139,6 +142,7 @@ The orchestrator runs stages in dependency order:
 6. `benchmark` compares partitioned and unpartitioned BigQuery scan cost.
 7. `grafana` starts the dashboard container.
 8. `weekly` generates a short stakeholder summary with the LLM assistant.
+9. `report` writes a formatted multi-sheet Excel workbook to `reports/`.
 
 ## Running Stages Manually
 
@@ -182,6 +186,14 @@ docker compose up -d grafana
 
 Grafana runs at `http://localhost:3000`. The username is `admin`; the password
 is the value of `GRAFANA_ADMIN_PASSWORD`.
+
+Generate the Excel report:
+
+```bash
+python pipeline/report/excel_report.py
+```
+
+The workbook is written to `reports/analytics_report.xlsx`.
 
 ## Natural-Language Analytics Assistant
 
